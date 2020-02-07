@@ -1,46 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Spyder Editor
+Script for Named Entity Recognition 
 
-This is a temporary script file.
 """
-
-f = open('C:\\Users\\sachin.kalra\\Desktop\\news_article.docx', 'rb')
-
-f=open('C:\\Users\\sachin.kalra\\Desktop\\news_art.txt','rb')
-
-news_content=f.read()
-
-
-nltk.download()
-import nltk
-
-
-results=[]
-
-
-nltk.sent_tokenize(news_content)
-
-import nltk
-for sent_no,sentence in enumerate(nltk.sent_tokenize(news_content)):
-    no_of_tokens=len(nltk.word_tokenize(sentence))
-    tagged=nltk.pos_tag(nltk.word_tokenize(sentence))
-    no_of_nouns=len([word for word,pos in tagged if pos in ["NN","NNP"]])
-    ners=nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(sentence)),binary=False)
-    #ps=nltk.pos_tag(nltk.word_tokenize(sentence))
-    #print(ners[1])
-    #print('------------')
-    #print(ps[1])
-    no_of_ners=len([chunk for chunk in ners if hasattr(chunk,'label()')])
-    score=(no_of_ners+no_of_nouns)/float(no_of_tokens)
-    results.append((sent_no,no_of_tokens,no_of_ners,no_of_nouns,score,sentence))
-
-
-nltk.set_proxy('http://sachin.kalra:India@06@http://cpinternet.com:8080')
-nltk.download()
-
-
-
 txt=(''' about 100 anti-government protesters remained holed up at a Hong Kong
      university Tuesday as a police siege of the campus entered its third 
      day.City leader Carrie Lam said 600 people had left the Hong Kong 
@@ -70,19 +33,23 @@ txt=(''' about 100 anti-government protesters remained holed up at a Hong Kong
 import nltk
 from collections import defaultdict
 import matplotlib.pyplot as plt
-a=nltk.sent_tokenize(txt)
+
+a=nltk.sent_tokenize(txt1)
 b=[nltk.word_tokenize(sent) for sent in a]
 c=[nltk.pos_tag(sent) for sent in b]
 
 d=nltk.ne_chunk_sents(c,binary=True)
-
 for sent in d:
-    #print("the sent is: ",d)
     for chunk in sent:
-        #print("the chunk in above sent is:  ",chunk)
-        if hasattr(chunk, "label"): 
-            #print(type(chunk))
+        if hasattr(chunk, "label") and chunk.label() == "NE" :
             print(chunk)
+            
+# to print only NE , flag Bianry = True and remove chunk.label()
+d=nltk.ne_chunk_sents(c)
+for sent in d:
+    for chunk in sent:
+        if hasattr(chunk, "label") :
+            print(chunk)            
 
 
 # relvant 2:
@@ -100,3 +67,29 @@ values = [ner_categories.get(v) for v in labels]
 plt.pie(values, labels=labels, autopct='%1.1f%%', startangle=140)
 plt.show()
 
+
+# SpaCy Implementation
+
+import spacy
+
+# this didn't work
+#nlp=spacy.load('en')
+nlp=spacy.load('en_core_web_sm')
+
+doc=nlp(txt1)
+
+doc.ents
+#summarizing o/p 1
+x,y=zip(*[(ent.label_,ent.text) for ent in doc.ents])
+
+#summarizing o/p 2
+labels=[]
+text=[]
+for ent in doc.ents:
+    labels.append(ent.label_)
+    text.append(ent.text)
+    
+#summarizing o/p 3
+import pandas as pd
+pd.concat([pd.DataFrame(labels),pd.DataFrame(text)],axis=1)
+    
